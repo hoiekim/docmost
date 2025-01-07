@@ -1,5 +1,5 @@
 FROM node:21-alpine AS base
-LABEL org.opencontainers.image.source="https://github.com/docmost/docmost"
+LABEL org.opencontainers.image.source="https://github.com/hoiekim/docmost"
 
 FROM base AS builder
 
@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 RUN npm install -g pnpm
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 RUN pnpm build
 
 FROM base AS installer

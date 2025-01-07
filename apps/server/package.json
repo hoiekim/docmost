@@ -75,6 +75,7 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@docmost/editor-ext": "workspace:*",
     "@eslint/js": "^9.16.0",
     "@nestjs/cli": "^10.4.8",
     "@nestjs/schematics": "^10.2.3",
