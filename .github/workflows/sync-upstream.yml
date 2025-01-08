@@ -1,0 +1,61 @@
+name: Sync Upstream Updates
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-upstream:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout fork repository
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Set up Git credentials
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Add upstream repository
+      run: |
+        git remote add upstream https://github.com/docmost/docmost.git
+        git fetch upstream
+
+    - name: Create a new branch for the merge
+      run: |
+        git checkout -b sync-upstream
+        git merge upstream/main --no-edit
+
+    - name: Check for changes
+      id: changes
+      run: |
+        if git diff --quiet; then
+          echo "No changes detected."
+          echo "::set-output name=changes_detected::false"
+        else
+          echo "Changes detected."
+          echo "::set-output name=changes_detected::true"
+        fi
+
+    - name: Push the changes to a new branch
+      if: steps.changes.outputs.changes_detected == 'true'
+      run: |
+        git push origin sync-upstream
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create a pull request
+      if: steps.changes.outputs.changes_detected == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: sync-upstream
+        title: 'Sync updates from upstream'
+        body: |
+          This pull request contains updates merged from the upstream repository.
+          Please review the changes and merge them into the `main` branch if appropriate.
