@@ -13,7 +13,7 @@ jobs:
     - name: Checkout fork repository
       uses: actions/checkout@v3
       with:
-        persist-credentials: false
+        persist-credentials: true
         fetch-depth: 0
 
     - name: Set up Git credentials
@@ -26,10 +26,9 @@ jobs:
         git remote add upstream https://github.com/docmost/docmost.git
         git fetch upstream
 
-    - name: Create a new branch for the merge
+    - name: Rebase the fork with upstream/main
       run: |
-        git checkout -b sync-upstream
-        git merge upstream/main --no-edit
+        git rebase upstream/main
 
     - name: Check for changes
       id: changes
@@ -42,19 +41,13 @@ jobs:
           echo "::set-output name=changes_detected::true"
         fi
 
-    - name: Push the changes to a new branch
-      if: steps.changes.outputs.changes_detected == 'true'
-      run: |
-        git push origin sync-upstream
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Create a pull request
       if: steps.changes.outputs.changes_detected == 'true'
       uses: peter-evans/create-pull-request@v5
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: sync-upstream
+        delete-branch: true
         title: 'Sync updates from upstream'
         body: |
           This pull request contains updates merged from the upstream repository.
