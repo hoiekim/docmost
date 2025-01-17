@@ -26,36 +26,16 @@ jobs:
         git remote add upstream https://github.com/docmost/docmost.git
         git fetch upstream
 
-    - name: Create a new branch for the merge
+    - name: Rebase the fork with upstream/main
       run: |
-        git checkout -b sync-upstream
         git rebase upstream/main
 
-    - name: Check for changes
-      id: changes
-      run: |
-        if git diff main --quiet; then
-          echo "No changes detected."
-          echo "::set-output name=changes_detected::false"
-        else
-          echo "Changes detected."
-          echo "::set-output name=changes_detected::true"
-        fi
-
-    - name: Push the changes to a new branch
-      if: steps.changes.outputs.changes_detected == 'true'
-      run: |
-        git push origin sync-upstream --force
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Create a pull request
-      if: steps.changes.outputs.changes_detected == 'true'
-      uses: peter-evans/create-pull-request@v5
+      uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: sync-upstream
-        base: main
+        delete-branch: true
         title: 'Sync updates from upstream'
         body: |
           This pull request contains updates merged from the upstream repository.
