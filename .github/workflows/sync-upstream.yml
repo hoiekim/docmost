@@ -34,7 +34,7 @@ jobs:
     - name: Check for changes
       id: changes
       run: |
-        if git diff --quiet; then
+        if git diff main --quiet; then
           echo "No changes detected."
           echo "::set-output name=changes_detected::false"
         else
