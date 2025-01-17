@@ -13,7 +13,7 @@ jobs:
     - name: Checkout fork repository
       uses: actions/checkout@v3
       with:
-        persist-credentials: false
+        persist-credentials: true
         fetch-depth: 0
 
     - name: Set up Git credentials
@@ -29,7 +29,7 @@ jobs:
     - name: Create a new branch for the merge
       run: |
         git checkout -b sync-upstream
-        git merge upstream/main --no-edit
+        git rebase upstream/main
 
     - name: Check for changes
       id: changes
@@ -45,7 +45,7 @@ jobs:
     - name: Push the changes to a new branch
       if: steps.changes.outputs.changes_detected == 'true'
       run: |
-        git push origin sync-upstream
+        git push origin sync-upstream --force
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -55,6 +55,7 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: sync-upstream
+        base: main
         title: 'Sync updates from upstream'
         body: |
           This pull request contains updates merged from the upstream repository.
