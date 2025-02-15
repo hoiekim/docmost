@@ -91,6 +91,9 @@
     },
     "overrides": {
       "jsdom": "25.0.1"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "bcrypt"
+    ]
   }
 }

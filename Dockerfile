@@ -1,7 +1,7 @@
-FROM node:21-alpine AS base
+FROM --platform=linux/AMD64 node:21-alpine AS base
 LABEL org.opencontainers.image.source="https://github.com/hoiekim/docmost"
 
-FROM base AS builder
+FROM --platform=linux/AMD64 base AS builder
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN npm install -g pnpm
 RUN pnpm install --no-frozen-lockfile
 RUN pnpm build
 
-FROM base AS installer
+FROM --platform=linux/AMD64 base AS installer
 
 RUN apk add --no-cache curl bash
 
