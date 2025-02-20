@@ -19,7 +19,7 @@ export class SpaceRepo {
 
   async findById(
     spaceId: string,
-    workspaceId: string,
+    workspaceId?: string,
     opts?: { includeMemberCount?: boolean; trx?: KyselyTransaction },
   ): Promise<Space> {
     const db = dbOrTx(this.db, opts?.trx);
@@ -28,7 +28,10 @@ export class SpaceRepo {
       .selectFrom('spaces')
       .selectAll('spaces')
       .$if(opts?.includeMemberCount, (qb) => qb.select(this.withMemberCount))
-      .where('workspaceId', '=', workspaceId);
+    
+    if (workspaceId) {
+      query = query.where('workspaceId', '=', workspaceId);
+    }
 
     if (isValidUUID(spaceId)) {
       query = query.where('id', '=', spaceId);

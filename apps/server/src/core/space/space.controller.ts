@@ -34,6 +34,7 @@ import {
 } from '../casl/interfaces/workspace-ability.type';
 import WorkspaceAbilityFactory from '../casl/abilities/workspace-ability.factory';
 import { CreateSpaceDto } from './dto/create-space.dto';
+import { annonymous } from 'src/common/helpers';
 
 @UseGuards(JwtAuthGuard)
 @Controller('spaces')
@@ -53,6 +54,12 @@ export class SpaceController {
     pagination: PaginationOptions,
     @AuthUser() user: User,
   ) {
+    if (user === annonymous) {
+      return {
+        items: [],
+        meta: { limit: 1, page: 1, hasNextPage: false, hasPrevPage: false }
+      };
+    }
     return this.spaceMemberService.getUserSpaces(user.id, pagination);
   }
 
@@ -77,20 +84,24 @@ export class SpaceController {
       throw new ForbiddenException();
     }
 
-    const userSpaceRoles = await this.spaceMemberRepo.getUserSpaceRoles(
-      user.id,
-      space.id,
-    );
-
-    const userSpaceRole = findHighestUserSpaceRole(userSpaceRoles);
-
-    const membership = {
-      userId: user.id,
-      role: userSpaceRole,
-      permissions: ability.rules,
-    };
-
-    return { ...space, membership };
+    if (user === annonymous) {
+      return space
+    } else {
+      const userSpaceRoles = await this.spaceMemberRepo.getUserSpaceRoles(
+        user.id,
+        space.id,
+      );
+  
+      const userSpaceRole = findHighestUserSpaceRole(userSpaceRoles);
+  
+      const membership = {
+        userId: user.id,
+        role: userSpaceRole,
+        permissions: ability.rules,
+      };
+  
+      return { ...space, membership };
+    }
   }
 
   @HttpCode(HttpStatus.OK)

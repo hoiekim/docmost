@@ -19,6 +19,7 @@ export interface IUser {
   deactivatedAt: Date;
   deletedAt: Date;
   fullPageWidth: boolean; // used for update
+  isAnnonymous?: boolean;
 }
 
 export interface ICurrentUser {

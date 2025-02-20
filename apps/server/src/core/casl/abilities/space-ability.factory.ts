@@ -13,27 +13,34 @@ import {
   SpaceCaslSubject,
 } from '../interfaces/space-ability.type';
 import { findHighestUserSpaceRole } from '@docmost/db/repos/space/utils';
+import { SpaceRepo } from '@docmost/db/repos/space/space.repo';
+import { annonymous } from 'src/common/helpers';
 
 @Injectable()
 export default class SpaceAbilityFactory {
   constructor(private readonly spaceMemberRepo: SpaceMemberRepo) {}
-  async createForUser(user: User, spaceId: string) {
-    const userSpaceRoles = await this.spaceMemberRepo.getUserSpaceRoles(
-      user.id,
-      spaceId,
-    );
-
-    const userSpaceRole = findHighestUserSpaceRole(userSpaceRoles);
-
-    switch (userSpaceRole) {
-      case SpaceRole.ADMIN:
-        return buildSpaceAdminAbility();
-      case SpaceRole.WRITER:
-        return buildSpaceWriterAbility();
-      case SpaceRole.READER:
-        return buildSpaceReaderAbility();
-      default:
-        throw new NotFoundException('Space permissions not found');
+  
+  async createForUser(user: User | undefined, spaceId: string) {
+    if (user === annonymous) {
+      return buildSpaceReaderAbility();
+    } else {
+      const userSpaceRoles = await this.spaceMemberRepo.getUserSpaceRoles(
+        user.id,
+        spaceId,
+      );
+      
+      const userSpaceRole = findHighestUserSpaceRole(userSpaceRoles);
+      
+      switch (userSpaceRole) {
+        case SpaceRole.ADMIN:
+          return buildSpaceAdminAbility();
+        case SpaceRole.WRITER:
+          return buildSpaceWriterAbility();
+        case SpaceRole.READER:
+          return buildSpaceReaderAbility();
+        default:
+          throw new NotFoundException('Space permissions not found');
+      }
     }
   }
 }

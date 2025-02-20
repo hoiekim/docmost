@@ -12,6 +12,7 @@ import {
 import {useToggleSidebar} from "@/components/layouts/global/hooks/hooks/use-toggle-sidebar.ts";
 import SidebarToggle from "@/components/ui/sidebar-toggle-button.tsx";
 import { useTranslation } from "react-i18next";
+import { userAtom } from "@/features/user/atoms/current-user-atom";
 
 const links = [{link: APP_ROUTE.HOME, label: "Home"}];
 
@@ -22,6 +23,8 @@ export function AppHeader() {
 
   const [desktopOpened] = useAtom(desktopSidebarAtom);
   const toggleDesktop = useToggleSidebar(desktopSidebarAtom);
+
+  const [user,] = useAtom(userAtom);
 
   const isHomeRoute = location.pathname.startsWith("/home");
 
@@ -75,9 +78,11 @@ export function AppHeader() {
           </Group>
         </Group>
 
-        <Group px={"xl"}>
-          <TopMenu/>
-        </Group>
+        {!user.isAnnonymous && (
+          <Group px={"xl"}>
+            <TopMenu/>
+          </Group>
+        )}
       </Group>
     </>
   );
