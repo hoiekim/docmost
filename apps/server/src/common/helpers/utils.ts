@@ -1,7 +1,9 @@
 import * as path from 'path';
 import * as bcrypt from 'bcrypt';
 import { User } from '@docmost/db/types/entity.types';
-import { SpaceRole } from './types/permission';
+import { validate as isValidUUID } from 'uuid';
+import { UserRole } from './types/permission';
+import { PaginationResult } from '@docmost/db/pagination/pagination';
 
 export const envPath = path.resolve(process.cwd(), '..', '..', '.env');
 
@@ -56,10 +58,21 @@ export function extractDateFromUuid7(uuid7: string) {
   return new Date(timestamp);
 }
 
+export function extractPageSlugId(slug: string): string {
+  if (!slug) {
+    return undefined;
+  }
+  if (isValidUUID(slug)) {
+    return slug;
+  }
+  const parts = slug.split("-");
+  return parts.length > 1 ? parts[parts.length - 1] : slug;
+}
+
 export const annonymous: User = {
-  id: '',
+  id: 'annonymous',
   name: 'Annonymous',
-  role: SpaceRole.READER,
+  role: UserRole.GUEST,
   avatarUrl: '',
   email: '',
   invitedById: '',
@@ -75,4 +88,9 @@ export const annonymous: User = {
   lastActiveAt: undefined,
   lastLoginAt: undefined,
   updatedAt: undefined
+}
+
+export const emptyPaginationResult: PaginationResult<any> = {
+  items: [],
+  meta: { limit: 1, page: 1, hasNextPage: false, hasPrevPage: false }
 }

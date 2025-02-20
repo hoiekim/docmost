@@ -34,7 +34,8 @@ import {
 } from '../casl/interfaces/workspace-ability.type';
 import WorkspaceAbilityFactory from '../casl/abilities/workspace-ability.factory';
 import { CreateSpaceDto } from './dto/create-space.dto';
-import { annonymous } from 'src/common/helpers';
+import { annonymous, emptyPaginationResult } from 'src/common/helpers';
+import { SpaceRole } from 'src/common/helpers/types/permission';
 
 @UseGuards(JwtAuthGuard)
 @Controller('spaces')
@@ -54,12 +55,7 @@ export class SpaceController {
     pagination: PaginationOptions,
     @AuthUser() user: User,
   ) {
-    if (user === annonymous) {
-      return {
-        items: [],
-        meta: { limit: 1, page: 1, hasNextPage: false, hasPrevPage: false }
-      };
-    }
+    if (user === annonymous) return emptyPaginationResult;
     return this.spaceMemberService.getUserSpaces(user.id, pagination);
   }
 
@@ -85,7 +81,14 @@ export class SpaceController {
     }
 
     if (user === annonymous) {
-      return space
+      return {
+        ...space,
+        membership: {
+          userId: user.id,
+          role: SpaceRole.READER,
+          permissions: ability.rules,
+        }
+      }
     } else {
       const userSpaceRoles = await this.spaceMemberRepo.getUserSpaceRoles(
         user.id,

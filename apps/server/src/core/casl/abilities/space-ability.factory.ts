@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import {
   AbilityBuilder,
   createMongoAbility,
@@ -18,11 +18,16 @@ import { annonymous } from 'src/common/helpers';
 
 @Injectable()
 export default class SpaceAbilityFactory {
-  constructor(private readonly spaceMemberRepo: SpaceMemberRepo) {}
+  constructor(
+    private readonly spaceRepo: SpaceRepo,
+    private readonly spaceMemberRepo: SpaceMemberRepo
+  ) {}
   
   async createForUser(user: User | undefined, spaceId: string) {
     if (user === annonymous) {
-      return buildSpaceReaderAbility();
+      const space = await this.spaceRepo.findById(spaceId)
+      if (space.isPublished) return buildSpaceReaderAbility();
+      throw new UnauthorizedException();
     } else {
       const userSpaceRoles = await this.spaceMemberRepo.getUserSpaceRoles(
         user.id,

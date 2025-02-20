@@ -68,6 +68,7 @@ export class AuthController {
     @AuthUser() user: User,
     @AuthWorkspace() workspace: Workspace,
   ) {
+    if (user === annonymous) return;
     return this.authService.changePassword(dto, user.id, workspace.id);
   }
 
@@ -110,7 +111,7 @@ export class AuthController {
     @AuthUser() user: User,
     @AuthWorkspace() workspace: Workspace,
   ) {
-    if (user === annonymous) return null
+    if (user === annonymous) return null;
     return this.authService.getCollabToken(user.id, workspace.id);
   }
 

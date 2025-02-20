@@ -19,10 +19,6 @@ export class UserService {
     userId: string,
     workspaceId: string,
   ) {
-    if (!userId) {
-      throw new NotFoundException('User not found');
-    }
-
     const user = await this.userRepo.findById(userId, workspaceId);
 
     if (!user) {

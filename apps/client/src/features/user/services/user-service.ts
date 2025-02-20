@@ -6,7 +6,7 @@ export async function getMyInfo(): Promise<ICurrentUser> {
   const currentUser = req.data as ICurrentUser;
   if (!currentUser) return currentUser
   const user = currentUser.user
-  const isAnnonymous = !user.id && user.name === "Annonymous"
+  const isAnnonymous = user.id === "annonymous"
   return { ...currentUser, user: { ...user, isAnnonymous } }
 }
 

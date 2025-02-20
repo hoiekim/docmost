@@ -6,9 +6,10 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { Reflector } from '@nestjs/core';
-import { validate as isValidUUID } from 'uuid';
 import { PageRepo } from '@docmost/db/repos/page/page.repo';
 import { SpaceRepo } from '@docmost/db/repos/space/space.repo';
+import { extractPageSlugId } from '../helpers';
+import { Space } from '@docmost/db/types/entity.types';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -24,11 +25,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (this.isPublicApi(context)) return true;
 
     try {
-      const superResult = await super.canActivate(context)
-      return superResult as boolean
+      const isJwtValid = await super.canActivate(context)
+      return isJwtValid as boolean
     } catch (error) {
-      const isPublishedPage = await this.isPublishedPage(context);
-      if (isPublishedPage) return true
+      const isPublishedSpace = await this.isPublishedSpace(context);
+      if (isPublishedSpace) return true
       else throw error
     }
   }
@@ -47,7 +48,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     ]);
   }
 
-  async isPublishedPage(context: ExecutionContext): Promise<boolean> {
+  async isPublishedSpace(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const referer = request?.headers?.referer;
   
@@ -56,36 +57,37 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     try {
       const { pathname } = new URL(referer);
       const parts = pathname.split("/");
-      const pIndex = parts.indexOf("p");
-      if (pIndex !== parts.length - 2) return false;
-  
-      const slug = this.extractPageSlugId(parts[parts.length - 1]);
-      const page = await this.pageRepo.findById(slug)
-      if (!page) return false
-  
-      const { spaceId, workspaceId } = page
-      const space = await this.spaceRepo.findById(spaceId, workspaceId)
+      const sIndex = parts.indexOf("s");
+      
+      let space: Space;
+
+      if (sIndex === -1) {
+        const pIndex = parts.indexOf("p");
+        if (pIndex !== parts.length - 2) return false;
+    
+        const slug = extractPageSlugId(parts[parts.length - 1]);
+        const page = await this.pageRepo.findById(slug);
+        if (!page) return false;
+    
+        const { spaceId, workspaceId } = page;
+        space = await this.spaceRepo.findById(spaceId, workspaceId);
+      } else {
+        const spaceName = parts[sIndex + 1]
+        if (!spaceName) return false;
+
+        space = await this.spaceRepo.findBySlug(spaceName)
+      }
+
       if (!space) return false
 
       const { isPublished } = space
+      request.isPublishedSpace = isPublished
 
-      request.isPublishedPage = isPublished
       return isPublished
     } catch (error) {
       console.error('Invalid Referer URL:', referer);
     }
   
     return false;
-  }
-
-  extractPageSlugId(slug: string): string {
-    if (!slug) {
-      return undefined;
-    }
-    if (isValidUUID(slug)) {
-      return slug;
-    }
-    const parts = slug.split("-");
-    return parts.length > 1 ? parts[parts.length - 1] : slug;
   }
 }
