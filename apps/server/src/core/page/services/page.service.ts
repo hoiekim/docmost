@@ -642,4 +642,42 @@ export class PageService {
   ): Promise<void> {
     await this.pageRepo.removePage(pageId, userId, workspaceId);
   }
+
+  /**
+   * Update page body content directly via API.
+   * This replaces the entire page content with the provided ProseMirror JSON.
+   */
+  async updateBody(
+    page: Page,
+    content: Record<string, any>,
+    userId: string,
+  ): Promise<Page> {
+    const contributors = new Set<string>(page.contributorIds);
+    contributors.add(userId);
+    const contributorIds = Array.from(contributors);
+
+    // Convert content to text and ydoc formats
+    const textContent = jsonToText(content);
+    const ydoc = createYdocFromJson(content);
+
+    await this.pageRepo.updatePage(
+      {
+        content: content,
+        textContent: textContent,
+        ydoc: ydoc,
+        lastUpdatedById: userId,
+        updatedAt: new Date(),
+        contributorIds: contributorIds,
+      },
+      page.id,
+    );
+
+    return await this.pageRepo.findById(page.id, {
+      includeSpace: true,
+      includeContent: true,
+      includeCreator: true,
+      includeLastUpdatedBy: true,
+      includeContributors: true,
+    });
+  }
 }

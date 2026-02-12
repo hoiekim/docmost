@@ -12,6 +12,7 @@ import {
 import { PageService } from './services/page.service';
 import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
+import { UpdatePageBodyDto } from './dto/update-page-body.dto';
 import { MovePageDto, MovePageToSpaceDto } from './dto/move-page.dto';
 import {
   DeletePageDto,
@@ -388,5 +389,30 @@ export class PageController {
       throw new ForbiddenException();
     }
     return this.pageService.getPageBreadCrumbs(page.id);
+  }
+
+  /**
+   * Update page body content directly.
+   * Replaces the entire page content with the provided ProseMirror/TipTap JSON.
+   * This is useful for programmatic content updates via API.
+   */
+  @HttpCode(HttpStatus.OK)
+  @Post('update-body')
+  async updateBody(
+    @Body() dto: UpdatePageBodyDto,
+    @AuthUser() user: User,
+  ) {
+    const page = await this.pageRepo.findById(dto.pageId);
+
+    if (!page) {
+      throw new NotFoundException('Page not found');
+    }
+
+    const ability = await this.spaceAbility.createForUser(user, page.spaceId);
+    if (ability.cannot(SpaceCaslAction.Edit, SpaceCaslSubject.Page)) {
+      throw new ForbiddenException();
+    }
+
+    return this.pageService.updateBody(page, dto.content, user.id);
   }
 }
