@@ -1,9 +1,13 @@
-import { Hocuspocus } from '@hocuspocus/server';
+import { Hocuspocus, Server as HocuspocusServer, Document } from '@hocuspocus/server';
+import { TiptapTransformer } from '@hocuspocus/transformer';
+import * as Y from 'yjs';
 import { IncomingMessage } from 'http';
 import WebSocket from 'ws';
 import { AuthenticationExtension } from './extensions/authentication.extension';
 import { PersistenceExtension } from './extensions/persistence.extension';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import { EventName } from '../common/events/event.contants';
 import { EnvironmentService } from '../integrations/environment/environment.service';
 import {
   createRetryStrategy,
@@ -25,10 +29,12 @@ import {
   CollaborationHandler,
   CollabEventHandlers,
 } from './collaboration.handler';
+import { tiptapExtensions } from './collaboration.util';
 
 @Injectable()
 export class CollaborationGateway {
   private readonly hocuspocus: Hocuspocus;
+  private readonly logger = new Logger(CollaborationGateway.name);
   private redisConfig: RedisConfig;
   // @ts-ignore
   private readonly redisSync: RedisSyncExtension<CollabEventHandlers> | null =
@@ -184,5 +190,69 @@ export class CollaborationGateway {
     });
 
     await this.hocuspocus.hooks('onDestroy', { instance: this.hocuspocus });
+  }
+
+  /**
+   * Replace document content and sync to all connected Y.js clients.
+   * Only syncs via Y.js if the document is already loaded (has active viewers).
+   * If no one is viewing the page, returns false (caller should just update DB).
+   * 
+   * @param documentName The document name (e.g., "page.{pageId}")
+   * @param prosemirrorJson The new content in ProseMirror/TipTap JSON format
+   * @returns true if Y.js sync was performed, false if no active viewers
+   */
+  async replaceDocumentContent(
+    documentName: string,
+    prosemirrorJson: Record<string, any>,
+  ): Promise<boolean> {
+    // Check if document is currently loaded (has active viewers)
+    const existingDoc = this.hocuspocus.documents.get(documentName);
+    
+    if (!existingDoc) {
+      // No active viewers - no need for Y.js sync, DB update is sufficient
+      this.logger.debug(`No active viewers for ${documentName}, skipping Y.js sync`);
+      return false;
+    }
+    
+    this.logger.debug(`Syncing content to active viewers for ${documentName}`);
+    
+    const connection = await this.hocuspocus.openDirectConnection(documentName);
+    try {
+      await connection.transact((doc: Document) => {
+        const fragment = doc.getXmlFragment('default');
+        
+        // Clear existing content
+        if (fragment.length > 0) {
+          fragment.delete(0, fragment.length);
+        }
+        
+        // Create new Y.js doc from ProseMirror JSON and apply update
+        const newDoc = TiptapTransformer.toYdoc(
+          prosemirrorJson,
+          'default',
+          tiptapExtensions,
+        );
+        Y.applyUpdate(doc, Y.encodeStateAsUpdate(newDoc));
+      });
+      return true;
+    } finally {
+      await connection.disconnect();
+    }
+  }
+
+  /**
+   * Event handler for content replacement requests from PageService.
+   * This decouples PageModule from CollaborationModule.
+   */
+  @OnEvent(EventName.COLLAB_REPLACE_CONTENT)
+  async handleReplaceContent(payload: {
+    documentName: string;
+    content: Record<string, any>;
+  }): Promise<void> {
+    const { documentName, content } = payload;
+    const synced = await this.replaceDocumentContent(documentName, content);
+    this.logger.debug(
+      `Content replace event handled for ${documentName}: ${synced ? 'synced to viewers' : 'no active viewers'}`,
+    );
   }
 }
