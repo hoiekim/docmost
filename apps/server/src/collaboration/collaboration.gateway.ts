@@ -76,4 +76,21 @@ export class CollaborationGateway {
   closeDocumentConnections(documentName: string): void {
     this.hocuspocus.closeConnections(documentName);
   }
+
+  /**
+   * Force unload a document from memory after closing connections.
+   * This ensures the next client connection will load fresh content from the database.
+   * @param documentName The document name (e.g., "page.{pageId}")
+   */
+  async forceUnloadDocument(documentName: string): Promise<void> {
+    // Close all connections first
+    this.hocuspocus.closeConnections(documentName);
+    
+    // Get the document from the internal map
+    const document = this.hocuspocus.documents.get(documentName);
+    if (document) {
+      // Force unload from memory
+      await this.hocuspocus.unloadDocument(document);
+    }
+  }
 }
