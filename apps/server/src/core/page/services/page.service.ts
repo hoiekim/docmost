@@ -40,6 +40,7 @@ import { Queue } from 'bullmq';
 import { QueueJob, QueueName } from '../../../integrations/queue/constants';
 import { EventName } from '../../../common/events/event.contants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CollaborationGateway } from '../../../collaboration/collaboration.gateway';
 
 @Injectable()
 export class PageService {
@@ -53,6 +54,7 @@ export class PageService {
     @InjectQueue(QueueName.ATTACHMENT_QUEUE) private attachmentQueue: Queue,
     @InjectQueue(QueueName.AI_QUEUE) private aiQueue: Queue,
     private eventEmitter: EventEmitter2,
+    private collaborationGateway: CollaborationGateway,
   ) {}
 
   async findById(
@@ -651,10 +653,19 @@ export class PageService {
     page: Page,
     content: Record<string, any>,
     userId: string,
+    forceReplace?: boolean,
   ): Promise<Page> {
     const contributors = new Set<string>(page.contributorIds);
     contributors.add(userId);
     const contributorIds = Array.from(contributors);
+
+    // If forceReplace is requested, disconnect all active Y.js clients
+    // so they reload with the new content instead of merging
+    if (forceReplace) {
+      const documentName = `page.${page.id}`;
+      this.collaborationGateway.closeDocumentConnections(documentName);
+      this.logger.debug(`Force replace: closed connections for ${documentName}`);
+    }
 
     // Convert content to text and ydoc formats
     const textContent = jsonToText(content);

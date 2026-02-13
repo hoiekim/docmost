@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsObject, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class UpdatePageBodyDto {
   @IsString()
@@ -8,4 +8,8 @@ export class UpdatePageBodyDto {
   @IsObject()
   @IsNotEmpty()
   content: Record<string, any>;
+
+  @IsOptional()
+  @IsBoolean()
+  forceReplace?: boolean;
 }

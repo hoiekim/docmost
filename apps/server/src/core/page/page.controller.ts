@@ -413,6 +413,6 @@ export class PageController {
       throw new ForbiddenException();
     }
 
-    return this.pageService.updateBody(page, dto.content, user.id);
+    return this.pageService.updateBody(page, dto.content, user.id, dto.forceReplace);
   }
 }

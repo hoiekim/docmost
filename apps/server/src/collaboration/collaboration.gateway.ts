@@ -67,4 +67,13 @@ export class CollaborationGateway {
   async destroy(): Promise<void> {
     await this.hocuspocus.destroy();
   }
+
+  /**
+   * Close all connections for a specific document.
+   * Connected clients will receive a ResetConnection code and should reload.
+   * @param documentName The document name (e.g., "page.{pageId}")
+   */
+  closeDocumentConnections(documentName: string): void {
+    this.hocuspocus.closeConnections(documentName);
+  }
 }
