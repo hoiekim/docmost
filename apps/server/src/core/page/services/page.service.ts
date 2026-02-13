@@ -666,8 +666,8 @@ export class PageService {
     // If forceReplace is requested, sync new content to all active Y.js clients
     if (forceReplace) {
       const documentName = `page.${page.id}`;
-      await this.collaborationGateway.replaceDocumentContent(documentName, content);
-      this.logger.debug(`Force replace: synced content to clients for ${documentName}`);
+      const synced = await this.collaborationGateway.replaceDocumentContent(documentName, content);
+      this.logger.debug(`Force replace for ${documentName}: ${synced ? 'synced to viewers' : 'no active viewers'}`);
     }
 
     await this.pageRepo.updatePage(

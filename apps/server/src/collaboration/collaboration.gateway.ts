@@ -74,15 +74,27 @@ export class CollaborationGateway {
 
   /**
    * Replace document content and sync to all connected Y.js clients.
-   * This properly updates all browsers viewing the page without disconnecting them.
+   * Only syncs via Y.js if the document is already loaded (has active viewers).
+   * If no one is viewing the page, returns false (caller should just update DB).
+   * 
    * @param documentName The document name (e.g., "page.{pageId}")
    * @param prosemirrorJson The new content in ProseMirror/TipTap JSON format
+   * @returns true if Y.js sync was performed, false if no active viewers
    */
   async replaceDocumentContent(
     documentName: string,
     prosemirrorJson: Record<string, any>,
-  ): Promise<void> {
-    this.logger.debug(`Replacing content for ${documentName}`);
+  ): Promise<boolean> {
+    // Check if document is currently loaded (has active viewers)
+    const existingDoc = this.hocuspocus.documents.get(documentName);
+    
+    if (!existingDoc) {
+      // No active viewers - no need for Y.js sync, DB update is sufficient
+      this.logger.debug(`No active viewers for ${documentName}, skipping Y.js sync`);
+      return false;
+    }
+    
+    this.logger.debug(`Syncing content to active viewers for ${documentName}`);
     
     const connection = await this.hocuspocus.openDirectConnection(documentName);
     try {
@@ -102,6 +114,7 @@ export class CollaborationGateway {
         );
         Y.applyUpdate(doc, Y.encodeStateAsUpdate(newDoc));
       });
+      return true;
     } finally {
       await connection.disconnect();
     }
