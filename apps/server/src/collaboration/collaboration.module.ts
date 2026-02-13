@@ -1,4 +1,4 @@
-import { Global, Logger, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Logger, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { AuthenticationExtension } from './extensions/authentication.extension';
 import { PersistenceExtension } from './extensions/persistence.extension';
 import { CollaborationGateway } from './collaboration.gateway';
@@ -10,7 +10,6 @@ import { TokenModule } from '../core/auth/token.module';
 import { HistoryListener } from './listeners/history.listener';
 import { LoggerExtension } from './extensions/logger.extension';
 
-@Global()
 @Module({
   providers: [
     CollaborationGateway,
