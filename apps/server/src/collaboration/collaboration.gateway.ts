@@ -69,27 +69,17 @@ export class CollaborationGateway {
   }
 
   /**
-   * Close all connections for a specific document.
-   * Connected clients will receive a ResetConnection code and should reload.
-   * @param documentName The document name (e.g., "page.{pageId}")
-   */
-  closeDocumentConnections(documentName: string): void {
-    this.hocuspocus.closeConnections(documentName);
-  }
-
-  /**
    * Force unload a document from memory after closing connections.
    * This ensures the next client connection will load fresh content from the database.
    * @param documentName The document name (e.g., "page.{pageId}")
    */
   async forceUnloadDocument(documentName: string): Promise<void> {
-    // Close all connections first
+    // Close all connections first (sends ResetConnection to clients)
     this.hocuspocus.closeConnections(documentName);
     
-    // Get the document from the internal map
+    // Get the document from the internal map and unload it
     const document = this.hocuspocus.documents.get(documentName);
     if (document) {
-      // Force unload from memory
       await this.hocuspocus.unloadDocument(document);
     }
   }
