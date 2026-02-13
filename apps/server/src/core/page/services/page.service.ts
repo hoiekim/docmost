@@ -659,17 +659,16 @@ export class PageService {
     contributors.add(userId);
     const contributorIds = Array.from(contributors);
 
-    // If forceReplace is requested, disconnect all active Y.js clients
-    // AND unload document from memory so next load is fresh from DB
-    if (forceReplace) {
-      const documentName = `page.${page.id}`;
-      await this.collaborationGateway.forceUnloadDocument(documentName);
-      this.logger.debug(`Force replace: unloaded document ${documentName}`);
-    }
-
     // Convert content to text and ydoc formats
     const textContent = jsonToText(content);
     const ydoc = createYdocFromJson(content);
+
+    // If forceReplace is requested, sync new content to all active Y.js clients
+    if (forceReplace) {
+      const documentName = `page.${page.id}`;
+      await this.collaborationGateway.replaceDocumentContent(documentName, content);
+      this.logger.debug(`Force replace: synced content to clients for ${documentName}`);
+    }
 
     await this.pageRepo.updatePage(
       {
