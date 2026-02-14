@@ -1,6 +1,5 @@
 export enum EventName {
   COLLAB_PAGE_UPDATED = 'collab.page.updated',
-  COLLAB_REPLACE_CONTENT = 'collab.replace.content',
   PAGE_CREATED = 'page.created',
   PAGE_UPDATED = 'page.updated',
   PAGE_CONTENT_UPDATED = 'page-content-updated',
