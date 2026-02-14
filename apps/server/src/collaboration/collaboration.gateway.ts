@@ -6,6 +6,8 @@ import WebSocket from 'ws';
 import { AuthenticationExtension } from './extensions/authentication.extension';
 import { PersistenceExtension } from './extensions/persistence.extension';
 import { Injectable, Logger } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import { EventName } from '../common/events/event.contants';
 import { EnvironmentService } from '../integrations/environment/environment.service';
 import {
   createRetryStrategy,
@@ -236,5 +238,21 @@ export class CollaborationGateway {
     } finally {
       await connection.disconnect();
     }
+  }
+
+  /**
+   * Event handler for content replacement requests from PageService.
+   * This decouples PageModule from CollaborationModule.
+   */
+  @OnEvent(EventName.COLLAB_REPLACE_CONTENT)
+  async handleReplaceContent(payload: {
+    documentName: string;
+    content: Record<string, any>;
+  }): Promise<void> {
+    const { documentName, content } = payload;
+    const synced = await this.replaceDocumentContent(documentName, content);
+    this.logger.debug(
+      `Content replace event handled for ${documentName}: ${synced ? 'synced to viewers' : 'no active viewers'}`,
+    );
   }
 }

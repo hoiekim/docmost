@@ -40,7 +40,6 @@ import { Queue } from 'bullmq';
 import { QueueJob, QueueName } from '../../../integrations/queue/constants';
 import { EventName } from '../../../common/events/event.contants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CollaborationGateway } from '../../../collaboration/collaboration.gateway';
 
 @Injectable()
 export class PageService {
@@ -54,7 +53,6 @@ export class PageService {
     @InjectQueue(QueueName.ATTACHMENT_QUEUE) private attachmentQueue: Queue,
     @InjectQueue(QueueName.AI_QUEUE) private aiQueue: Queue,
     private eventEmitter: EventEmitter2,
-    private collaborationGateway: CollaborationGateway,
   ) {}
 
   async findById(
@@ -674,11 +672,14 @@ export class PageService {
     const textContent = jsonToText(content);
     const ydoc = createYdocFromJson(content);
 
-    // If forceReplace is requested, sync new content to all active Y.js clients
+    // If forceReplace is requested, emit event to sync content to active Y.js clients
     if (forceReplace) {
       const documentName = `page.${page.id}`;
-      const synced = await this.collaborationGateway.replaceDocumentContent(documentName, content);
-      this.logger.debug(`Force replace for ${documentName}: ${synced ? 'synced to viewers' : 'no active viewers'}`);
+      this.eventEmitter.emit(EventName.COLLAB_REPLACE_CONTENT, {
+        documentName,
+        content,
+      });
+      this.logger.debug(`Emitted content replace event for ${documentName}`);
     }
 
     await this.pageRepo.updatePage(
