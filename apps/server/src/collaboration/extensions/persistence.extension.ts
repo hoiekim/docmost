@@ -98,6 +98,14 @@ export class PersistenceExtension implements Extension {
 
     const pageId = getPageId(documentName);
 
+    // Skip DB update for direct connections (API-triggered syncs)
+    // The API endpoint already handles the DB update with proper user context
+    const userId = context?.user?.id;
+    if (!userId) {
+      this.logger.debug(`Skipping DB update for ${pageId} - no user context (direct connection)`);
+      return;
+    }
+
     const tiptapJson = TiptapTransformer.fromYdoc(document, 'default');
     const ydocState = Buffer.from(Y.encodeStateAsUpdate(document));
 
@@ -145,7 +153,7 @@ export class PersistenceExtension implements Extension {
             content: tiptapJson,
             textContent: textContent,
             ydoc: ydocState,
-            lastUpdatedById: context.user.id,
+            lastUpdatedById: userId,
             contributorIds: contributorIds,
           },
           pageId,
@@ -181,7 +189,7 @@ export class PersistenceExtension implements Extension {
 
   async onChange(data: onChangePayload) {
     const documentName = data.documentName;
-    const userId = data.context?.user.id;
+    const userId = data.context?.user?.id;
     if (!userId) return;
 
     if (!this.contributors.has(documentName)) {
