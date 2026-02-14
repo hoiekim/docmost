@@ -412,6 +412,6 @@ export class PageController {
       throw new ForbiddenException();
     }
 
-    return this.pageService.updateBody(page, dto.content, user.id, dto.forceReplace);
+    return this.pageService.updateBody(page, dto.content, user.id);
   }
 }

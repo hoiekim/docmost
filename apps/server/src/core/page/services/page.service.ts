@@ -659,12 +659,12 @@ export class PageService {
   /**
    * Update page body content directly via API.
    * This replaces the entire page content with the provided ProseMirror JSON.
+   * Automatically syncs to any active Y.js viewers.
    */
   async updateBody(
     page: Page,
     content: Record<string, any>,
     userId: string,
-    forceReplace?: boolean,
   ): Promise<Page> {
     const contributors = new Set<string>(page.contributorIds);
     contributors.add(userId);
@@ -674,17 +674,15 @@ export class PageService {
     const textContent = jsonToText(content);
     const ydoc = createYdocFromJson(content);
 
-    // If forceReplace is requested, sync new content to all active Y.js clients
-    if (forceReplace) {
-      const documentName = `page.${page.id}`;
-      const synced = await this.collaborationGateway.replaceDocumentContent(
-        documentName,
-        content,
-      );
-      this.logger.debug(
-        `Force replace for ${documentName}: ${synced ? 'synced to viewers' : 'no active viewers'}`,
-      );
-    }
+    // Sync new content to any active Y.js viewers
+    const documentName = `page.${page.id}`;
+    const synced = await this.collaborationGateway.replaceDocumentContent(
+      documentName,
+      content,
+    );
+    this.logger.debug(
+      `Content sync for ${documentName}: ${synced ? 'synced to viewers' : 'no active viewers'}`,
+    );
 
     await this.pageRepo.updatePage(
       {
