@@ -260,9 +260,6 @@ importers:
       '@casl/react':
         specifier: 5.0.1
         version: 5.0.1(@casl/ability@6.8.0)(react@19.2.7)
-      '@docmost/base-formula':
-        specifier: workspace:*
-        version: link:../../packages/base-formula
       '@docmost/ce-formula':
         specifier: workspace:*
         version: link:../../packages/ce-formula

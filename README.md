@@ -55,13 +55,25 @@ the UI exactly as they do on an unlicensed upstream install.
 - `packages/ce-formula/` is the fork's own formula engine, replacing upstream's
   enterprise-licensed `packages/base-formula`, which CE does not import.
 - Four open-source client files import the bases UI; in this fork those imports point at
-  `@/ce/base/...` instead of `@/ee/base/...`. `apps/client/src/ee/base` is left as upstream
-  ships it, unused and therefore not bundled, so upstream changes to it never conflict.
-- No other file differs from upstream. Rebasing onto a new upstream release usually produces a
-  single conflict on the removed submodule pointer plus, occasionally, one of the four import
-  lines; the procedures are documented in
-  [`apps/server/src/ce/README.md`](apps/server/src/ce/README.md) and
-  [`apps/client/src/ce/README.md`](apps/client/src/ce/README.md).
+  `@/ce/base/...` instead of `@/ee/base/...`. Every other `@/ee/*` import is left exactly as
+  upstream wrote it and redirected at build time to
+  [`apps/client/src/ce/ee-stub`](apps/client/src/ce/ee-stub/README.md), so `apps/client/src/ee`
+  is left as upstream ships it and upstream changes to it never conflict.
+- Fourteen upstream files differ in total: the four bases files above plus
+  `features/search/components/search-spotlight.tsx`; this README; and eight build and config
+  files (`Dockerfile`, `.dockerignore`, both `tsconfig.json`, both `package.json`,
+  `vite.config.ts`, the lockfile). To regenerate that list:
+
+  ```sh
+  git diff --name-status $(git merge-base main upstream/main) main | grep '^M'
+  ```
+
+**Before rebasing onto a new upstream release, read
+[`apps/client/src/ce/README.md`](apps/client/src/ce/README.md#rebasing-onto-upstream)** — it has
+the checklist, and the list of config entries that must survive the rebase, two of which fail
+silently by letting enterprise code back into the build. The server side is documented in
+[`apps/server/src/ce/README.md`](apps/server/src/ce/README.md#rebasing-onto-upstream); its usual
+conflict is upstream bumping the removed `apps/server/src/ee` submodule pointer.
 
 ## Running
 
@@ -85,13 +97,21 @@ Enterprise License permits copying and modification "for development and testing
 but forbids publishing and distribution, and conditions production use on a valid Docmost
 Enterprise subscription.
 
-No CE code imports any of them. The bases UI comes from `apps/client/src/ce` and its formula
-engine from `packages/ce-formula`, a fork-authored AGPL replacement for
-`packages/base-formula`; nothing under `apps/client/src/ee/base` or `packages/base-formula`
-is imported, bundled or copied into the Docker image.
+**None of it is built into this fork.** The open-source core imports enterprise code in 39 files;
+`vite.config.ts` and `tsconfig.json` alias every `@/ee/*` import to
+[`apps/client/src/ce/ee-stub`](apps/client/src/ce/ee-stub/README.md), the bases UI comes from
+`apps/client/src/ce/base`, and the formula engine from `packages/ce-formula`, a fork-authored
+AGPL replacement for `packages/base-formula`. So `apps/client/src/ee` and `packages/base-formula`
+are excluded from `tsconfig.json`, absent from the module graph, and listed in `.dockerignore` —
+they reach neither the client bundle nor any layer of the Docker image. They stay on disk,
+untouched, only so that upstream changes to them never conflict on rebase.
 
-The rest of `apps/client/src/ee` (feature flags, entitlement hooks and the pages for features
-CE does not implement) is still imported by the open-source core exactly as upstream does, so
-a client bundle built from this repository still contains that enterprise code. Review the
-Enterprise License before running this fork in production, and before publishing an image
-built from it.
+The check that keeps this true: **the client builds with `apps/client/src/ee` deleted.**
+
+```sh
+mv apps/client/src/ee /tmp/ee && pnpm --filter client build; mv /tmp/ee apps/client/src/ee
+```
+
+This matters if you redistribute rather than only run: an image built from this repository
+contains no enterprise-licensed code, but the repository itself still carries those directories,
+so read `packages/ee/LICENSE` before redistributing the source.

@@ -54,9 +54,15 @@ export default defineConfig(({ mode }) => {
       },
     },
     resolve: {
-      alias: {
-        "@": "/src",
-      },
+      // Order matters: the "@/ee" entry has to be matched before the general
+      // "@" one. It points every enterprise import in the open-source core at
+      // the fork's stubs, so apps/client/src/ee never enters the module graph
+      // and no enterprise-licensed code reaches the bundle. See
+      // src/ce/ee-stub/README.md.
+      alias: [
+        { find: /^@\/ee\//, replacement: "/src/ce/ee-stub/" },
+        { find: /^@\//, replacement: "/src/" },
+      ],
     },
     server: {
       proxy: {

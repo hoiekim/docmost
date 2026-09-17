@@ -78,9 +78,17 @@ live at that path.
 
 ## Rebasing onto upstream
 
-No open-source file is modified by this feature, so `git rebase upstream/main`
-only conflicts when upstream bumps the submodule pointer (it does so on most
-enterprise releases). The conflict looks like:
+No open-source file *under `src/`* is modified by this feature, so
+`git rebase upstream/main` usually only conflicts when upstream bumps the
+submodule pointer (it does so on most enterprise releases). Two build files
+outside `src/` do carry fork entries, and both fail loudly if a rebase drops
+them: `apps/server/package.json` (the `@docmost/ce-formula` dependency and the
+jest `moduleNameMapper` entries) and `apps/server/tsconfig.json` (the
+`@docmost/ce-formula/*` paths). The client has four more, two of which fail
+silently — see
+[Fork-specific build configuration](../../../client/src/ce/README.md#fork-specific-build-configuration).
+
+The submodule conflict looks like:
 
 ```
 CONFLICT (modify/delete): apps/server/src/ee deleted in HEAD and modified in <upstream commit>

@@ -4,3 +4,11 @@
 /data
 **/.env*
 **/.nx
+
+# Enterprise-licensed source. Neither is imported by CE (the client resolves
+# every @/ee/* import to apps/client/src/ce/ee-stub, and the server's formula
+# engine is packages/ce-formula), so keeping them out of the build context
+# means no enterprise-licensed code enters the image at any layer.
+apps/client/src/ee
+packages/base-formula
+packages/ee
