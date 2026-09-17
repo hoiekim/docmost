@@ -78,24 +78,47 @@ live at that path.
 
 ## Rebasing onto upstream
 
-No open-source file is modified by this feature, so `git rebase upstream/main`
-only conflicts when upstream bumps the submodule pointer (it does so on most
-enterprise releases). The conflict looks like:
+No open-source file *under `src/`* is modified by this feature, so
+`git rebase upstream/main` usually only conflicts when upstream bumps the
+submodule pointer (it does so on most enterprise releases). Two build files
+outside `src/` do carry fork entries, and both fail loudly if a rebase drops
+them: `apps/server/package.json` (the `@docmost/ce-formula` dependency and the
+jest `moduleNameMapper` entries) and `apps/server/tsconfig.json` (the
+`@docmost/ce-formula/*` paths). The client has four more, two of which fail
+silently — see
+[Fork-specific build configuration](../../../client/src/ce/README.md#fork-specific-build-configuration).
+
+The submodule conflict looks like this. Note that a *rebase* replays the
+fork's commit onto upstream, so the fork's deletion is the incoming side and
+upstream's gitlink is `HEAD` — the reverse of a merge. Because the fork's real
+directory wants the same path, git moves the gitlink aside rather than
+conflicting on the path itself:
 
 ```
-CONFLICT (modify/delete): apps/server/src/ee deleted in HEAD and modified in <upstream commit>
+CONFLICT (file/directory): directory in the way of apps/server/src/ee from HEAD;
+  moving it to apps/server/src/ee~HEAD instead.
+CONFLICT (modify/delete): apps/server/src/ee~HEAD deleted in <fork commit> and
+  modified in HEAD.
 ```
 
-Resolve it by keeping the fork's directory:
+So the conflicted path is `apps/server/src/ee~HEAD`, not `apps/server/src/ee`,
+and the shim files are already staged at stage 0 — nothing needs re-adding.
+Drop the stray gitlink and its empty directory:
 
 ```sh
-git rm --cached apps/server/src/ee      # drop upstream's gitlink from the index
-git add apps/server/src/ee              # re-add the shim files
+git update-index --force-remove 'apps/server/src/ee~HEAD'
+rmdir 'apps/server/src/ee~HEAD'
 git rebase --continue
 ```
 
-If upstream ever edits `.gitmodules` you will see a similar conflict on that
-file; keep it deleted (`git rm .gitmodules`).
+`git rm --cached` does not work here: the entry is unmerged and has no stage-0
+version, so it has to be removed from the index directly. Confirm the result
+with `git ls-files -s apps/server/src/ee`, which must list the four shim files
+as `100644` and no `160000` gitlink.
+
+`.gitmodules` replays as a clean delete (the fork removed it, upstream has not
+touched it since). If upstream ever edits it you will get a conflict there too;
+keep it deleted (`git rm .gitmodules`).
 
 After a rebase, re-check the four `require()` seams above still exist with the
 same paths, and that `apps/server/src/common/features.ts`, the

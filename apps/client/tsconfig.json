@@ -23,11 +23,15 @@
     "allowSyntheticDefaultImports": true,
 
     "paths": {
+      "@/ee/*": ["./src/ce/ee-stub/*"],
       "@/*": ["./src/*"]
     }
   },
   "include": [
     "src"
+  ],
+  "exclude": [
+    "src/ee"
   ],
   "references": [{ "path": "./tsconfig.node.json"}]
 }
