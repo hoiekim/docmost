@@ -1,0 +1,134 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.source {
+  font-family: var(--mantine-font-family-monospace);
+  font-size: var(--mantine-font-size-sm);
+  line-height: 1.5;
+  tab-size: 2;
+}
+
+/* ---- status line ---- */
+
+.status {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  min-height: 20px;
+  font-size: var(--mantine-font-size-xs);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.status[data-ok] {
+  color: var(--mantine-color-green-7);
+}
+
+.status[data-error] {
+  color: var(--mantine-color-red-6);
+}
+
+.status[data-pending] {
+  color: var(--mantine-color-dimmed);
+}
+
+.statusIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ---- sections ---- */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sectionTitle {
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--mantine-color-dimmed);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.chip {
+  max-width: 100%;
+}
+
+.chipLabel {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+/* ---- function list ---- */
+
+.functionList {
+  display: flex;
+  flex-direction: column;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 2px;
+  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border-radius: var(--mantine-radius-sm);
+}
+
+.category {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 4px 8px 2px;
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 600;
+  color: var(--mantine-color-dimmed);
+  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+}
+
+.functionItem {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  min-width: 0;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.functionItem:hover,
+.functionItem:focus-visible {
+  background: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+  outline: none;
+}
+
+.signature {
+  font-family: var(--mantine-font-family-monospace);
+  font-size: var(--mantine-font-size-xs);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.doc {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  line-height: 1.35;
+}

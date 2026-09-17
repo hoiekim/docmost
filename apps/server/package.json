@@ -38,7 +38,7 @@
     "@aws-sdk/s3-request-presigner": "3.1050.0",
     "@azure/storage-blob": "12.31.0",
     "@clickhouse/client": "1.18.2",
-    "@docmost/base-formula": "workspace:*",
+    "@docmost/ce-formula": "workspace:*",
     "@docmost/pdf-inspector": "1.9.6",
     "@fastify/cookie": "11.1.2",
     "@fastify/multipart": "10.1.1",
@@ -197,8 +197,8 @@
       "^@docmost/transactional/(.*)$": "<rootDir>/integrations/transactional/$1",
       "^@docmost/ee/(.*)$": "<rootDir>/ee/$1",
       "^src/(.*)$": "<rootDir>/$1",
-      "^@docmost/base-formula/server$": "<rootDir>/../../../packages/base-formula/src/index.server.ts",
-      "^@docmost/base-formula/client$": "<rootDir>/../../../packages/base-formula/src/index.client.ts"
+      "^@docmost/ce-formula/server$": "<rootDir>/../../../packages/ce-formula/src/index.server.ts",
+      "^@docmost/ce-formula/client$": "<rootDir>/../../../packages/ce-formula/src/index.client.ts"
     }
   }
 }

@@ -70,7 +70,7 @@ const WorkspaceApiKeys = lazy(
   () => import("@/ee/api-key/pages/workspace-api-keys"),
 );
 const AiSettings = lazy(() => import("@/ee/ai/pages/ai-settings.tsx"));
-const BasePage = lazy(() => import("@/ee/base/pages/base-page.tsx"));
+const BasePage = lazy(() => import("@/ce/base/pages/base-page.tsx"));
 const AuditLogs = lazy(() => import("@/ee/audit/pages/audit-logs.tsx"));
 const VerifiedPages = lazy(
   () => import("@/ee/page-verification/pages/verified-pages.tsx"),

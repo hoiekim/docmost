@@ -263,6 +263,9 @@ importers:
       '@docmost/base-formula':
         specifier: workspace:*
         version: link:../../packages/base-formula
+      '@docmost/ce-formula':
+        specifier: workspace:*
+        version: link:../../packages/ce-formula
       '@docmost/editor-ext':
         specifier: workspace:*
         version: link:../../packages/editor-ext
@@ -516,9 +519,9 @@ importers:
       '@clickhouse/client':
         specifier: 1.18.2
         version: 1.18.2
-      '@docmost/base-formula':
+      '@docmost/ce-formula':
         specifier: workspace:*
-        version: link:../../packages/base-formula
+        version: link:../../packages/ce-formula
       '@docmost/pdf-inspector':
         specifier: 1.9.6
         version: 1.9.6
@@ -867,6 +870,8 @@ importers:
         version: 8.57.1(eslint@9.28.0(jiti@2.4.2)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3)
 
   packages/base-formula: {}
+
+  packages/ce-formula: {}
 
   packages/editor-ext:
     dependencies:

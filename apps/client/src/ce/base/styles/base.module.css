@@ -1,0 +1,26 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+  /* Full-page mode: the parent gives us a definite height; fill it. */
+  flex: 1;
+  min-height: 0;
+}
+
+.root[data-embedded] {
+  flex: none;
+  min-height: auto;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.root[data-embedded] .body {
+  flex: none;
+}

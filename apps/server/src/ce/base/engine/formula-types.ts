@@ -4,7 +4,7 @@ export type FormulaResultType = 'number' | 'string' | 'boolean' | 'date' | 'null
 
 /**
  * How a property participates in formula type checking. Must match
- * clientResultTypeOf() in apps/client/src/ee/base/hooks/use-formula-parser.ts
+ * propertyResultType() in apps/client/src/ce/base/model/formula.ts
  * so client-side validation and server-side validation agree.
  */
 export function projectResultType(

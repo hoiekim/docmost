@@ -3,7 +3,7 @@ import { Button } from "@mantine/core";
 import { IconTable, IconLayoutKanban } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useAtomValue } from "jotai";
-import { useConvertPageToBaseMutation } from "@/ee/base/queries/base-query";
+import { useConvertPageToBaseMutation } from "@/ce/base/queries/base-query";
 import {
   pageEditorAtom,
   yjsSyncedAtom,

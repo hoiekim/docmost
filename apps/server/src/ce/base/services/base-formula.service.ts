@@ -8,9 +8,12 @@ import {
   INLINE_ROW_THRESHOLD,
 } from '../jobs/base-job.types';
 import {
+  AST_VERSION,
+  Ast,
   BaseFormulaGraph,
   DEFAULT_MAX_DEPTH,
   EvalContext,
+  EvalProperty,
   FormulaParseError,
   MAX_FORMULA_SOURCE_LENGTH,
   evaluate,
@@ -19,7 +22,7 @@ import {
   resolve,
   typecheck,
   isErrorCell,
-} from '@docmost/base-formula/server';
+} from '@docmost/ce-formula/server';
 import { EventName } from '../../../common/events/event.contants';
 import { projectResultType } from '../engine/formula-types';
 import { BaseRowRepo, ROW_BATCH_SIZE } from '../repos/base-row.repo';
@@ -39,9 +42,15 @@ function sameValue(a: unknown, b: unknown): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
+/** Cap on recompiled ASTs held for formulas stored by an older engine. */
+const RECOMPILE_CACHE_LIMIT = 500;
+
 @Injectable()
 export class BaseFormulaService {
   private readonly logger = new Logger(BaseFormulaService.name);
+
+  /** `${propertyId}:${source}` → AST, for formulas stored at an older astVersion. */
+  private readonly recompiled = new Map<string, Ast | null>();
 
   constructor(
     private readonly rowRepo: BaseRowRepo,
@@ -121,7 +130,7 @@ export class BaseFormulaService {
         ast,
         resultType,
         dependencies,
-        astVersion: 1,
+        astVersion: AST_VERSION,
         ...(typeOptions?.formatOptions && typeof typeOptions.formatOptions === 'object'
           ? { formatOptions: typeOptions.formatOptions as Record<string, unknown> }
           : {}),
@@ -150,6 +159,40 @@ export class BaseFormulaService {
    * requested ids (or every formula when `onlyIds` is omitted). Nested
    * formulas are evaluated from source by the engine, not read from cells.
    */
+  /**
+   * The AST to evaluate for a formula property. A formula stored by an older
+   * engine (missing or outdated `astVersion`) is recompiled from its `source`
+   * so existing bases keep working; the stored copy is refreshed the next time
+   * the property is saved. Returns null when the source no longer compiles,
+   * for instance because a property it referenced was renamed.
+   */
+  private astFor(prop: IBaseProperty, props: IBaseProperty[]): Ast | null {
+    const opts = prop.typeOptions as FormulaTypeOptions | undefined;
+    if (opts?.ast && opts.astVersion === AST_VERSION) return opts.ast as Ast;
+
+    const source = typeof opts?.source === 'string' ? opts.source : '';
+    if (source.trim() === '') return null;
+
+    const key = `${prop.id}:${source}`;
+    if (this.recompiled.has(key)) return this.recompiled.get(key) ?? null;
+
+    let ast: Ast | null = null;
+    try {
+      const nameToId = new Map(
+        props.filter((p) => p.id !== prop.id).map((p) => [p.name, p.id]),
+      );
+      ast = resolve(parseRaw(source), nameToId).ast;
+    } catch (err) {
+      this.logger.warn(
+        `Formula ${prop.id} could not be recompiled: ${(err as Error).message}`,
+      );
+    }
+
+    if (this.recompiled.size >= RECOMPILE_CACHE_LIMIT) this.recompiled.clear();
+    this.recompiled.set(key, ast);
+    return ast;
+  }
+
   computeRow(
     props: IBaseProperty[],
     cells: Record<string, unknown>,
@@ -158,19 +201,39 @@ export class BaseFormulaService {
     const formulas = this.formulaProps(props);
     if (formulas.length === 0) return {};
     const wanted = onlyIds ? new Set(onlyIds) : null;
+
+    // Normalize every formula property to a current-version AST up front, so
+    // formulas that reference other formulas resolve through the same path.
+    const asts = new Map<string, Ast | null>();
+    for (const f of formulas) asts.set(f.id, this.astFor(f, props));
+
+    const properties = new Map<string, EvalProperty>(
+      props.map((p) => [
+        p.id,
+        {
+          id: p.id,
+          type: p.type,
+          typeOptions:
+            p.type === 'formula'
+              ? { ...(p.typeOptions as object), ast: asts.get(p.id), astVersion: AST_VERSION }
+              : p.typeOptions,
+        },
+      ]),
+    );
+
     const ctx: EvalContext = {
       registry,
-      properties: new Map(
-        props.map((p) => [p.id, { id: p.id, type: p.type, typeOptions: p.typeOptions }]),
-      ),
+      properties,
       depth: 0,
       maxDepth: DEFAULT_MAX_DEPTH,
       memo: new Map(),
+      now: Date.now(),
     };
+
     const out: Record<string, unknown> = {};
     for (const f of formulas) {
       if (wanted && !wanted.has(f.id)) continue;
-      const ast = (f.typeOptions as any)?.ast;
+      const ast = asts.get(f.id);
       if (!ast) {
         out[f.id] = null;
         continue;

@@ -13,7 +13,7 @@ import { IconAlertTriangle, IconFileOff } from "@tabler/icons-react";
 import { Button } from "@mantine/core";
 import { Link } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
-import { BaseView } from "@/ee/base/components/base-view";
+import { BaseView } from "@/ce/base/components/base-view";
 import { useHasFeature } from "@/ee/hooks/use-feature";
 import { Feature } from "@/ee/features";
 import { getPageTitle } from "@/features/page/page.utils";
