@@ -1,5 +1,5 @@
 /**
- * Server-side mirror of apps/client/src/ee/base/types/base.types.ts.
+ * Server-side mirror of apps/client/src/ce/base/types.ts.
  * Keep the two in sync when upstream changes the client contract.
  */
 import type {
@@ -104,7 +104,8 @@ export type FormulaTypeOptions = {
   ast: unknown;
   resultType: 'number' | 'string' | 'boolean' | 'date' | 'null';
   dependencies: string[];
-  astVersion: 1;
+  /** AST_VERSION the `ast` was compiled at; older values are recompiled. */
+  astVersion: number;
   formatOptions?: Record<string, unknown>;
 };
 

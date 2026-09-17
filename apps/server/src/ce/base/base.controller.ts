@@ -44,7 +44,7 @@ import { CreateViewDto, DeleteViewDto, UpdateViewDto } from './dto/view.dto';
 import { ExpandPagesDto } from './dto/pages-expand.dto';
 
 /**
- * REST surface consumed by apps/client/src/ee/base/services/base-service.ts.
+ * REST surface consumed by apps/client/src/ce/base/api.ts.
  * Every route: feature gate → load base page → page-level view/edit check.
  */
 @UseGuards(JwtAuthGuard)

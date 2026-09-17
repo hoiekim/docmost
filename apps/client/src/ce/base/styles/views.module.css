@@ -1,0 +1,178 @@
+/* ---- shared popover layout ---- */
+
+.dropdown {
+  padding: 8px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+  margin-bottom: 6px;
+}
+
+.title {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.empty {
+  padding: 6px 2px;
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-dimmed);
+}
+
+.toolButton {
+  font-weight: 500;
+}
+
+/* ---- rows ---- */
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 4px;
+  background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+}
+
+.row[data-disabled] {
+  opacity: 0.7;
+}
+
+.rowLine {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.rowField {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowFieldNarrow {
+  flex: 0 0 auto;
+  width: 132px;
+  min-width: 0;
+}
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.rowLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-dimmed);
+}
+
+/* ---- select options ---- */
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.optionIcon {
+  flex-shrink: 0;
+  color: var(--mantine-color-dimmed);
+}
+
+.optionLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- people value ---- */
+
+.peopleButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  width: 100%;
+  min-height: 30px;
+  padding: 3px 8px;
+  border-radius: var(--mantine-radius-default);
+  border: 1px solid light-dark(var(--mantine-color-gray-4), var(--mantine-color-dark-4));
+  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+  font-size: var(--mantine-font-size-sm);
+  text-align: left;
+}
+
+.peopleButton:hover {
+  border-color: light-dark(var(--mantine-color-gray-5), var(--mantine-color-dark-3));
+}
+
+.peopleButton[data-expanded] {
+  border-color: var(--mantine-primary-color-filled);
+}
+
+.peoplePlaceholder {
+  color: var(--mantine-color-placeholder);
+}
+
+/* ---- property visibility ---- */
+
+.visibilityList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.visibilityRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  min-width: 0;
+}
+
+.visibilityRow:hover {
+  background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+}
+
+.visibilityRow[data-primary] {
+  color: var(--mantine-color-dimmed);
+}
+
+.visibilityName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--mantine-font-size-sm);
+}

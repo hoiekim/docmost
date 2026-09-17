@@ -2,18 +2,60 @@
 
 This directory holds the server side of features that upstream Docmost ships
 only in its private enterprise repository. Everything here is written for this
-fork; nothing is copied from `github.com/docmost/ee`.
+fork. No enterprise implementation code is copied: upstream tracks its server
+EE code as a submodule pointing at the private `github.com/docmost/ee`, which
+this fork has never fetched, so that source has never been present in this tree.
+The wire contract is a separate matter and is deliberately compatible — see
+[Where the bases contract comes from](#where-the-bases-contract-comes-from).
 
 Currently implemented:
 
-- **Bases** (`base/`): tables and kanban boards backed by a page. The client
-  (`apps/client/src/ee/base`), the DB migration, the `base` editor node and the
-  `@docmost/base-formula` package are all upstream open-source code; this
-  directory supplies the REST API, query engine, formula evaluation, property
-  type conversion, CSV export and realtime broadcasting they expect.
+- **Bases** (`base/`): tables and kanban boards backed by a page. The DB
+  migration and the `base` editor node are upstream open-source code; the
+  formula engine is the fork's own `packages/ce-formula` and the client is the
+  fork's own `apps/client/src/ce/base`. This directory supplies the REST API,
+  query engine, formula evaluation, property type conversion, CSV export and
+  realtime broadcasting.
+
+  Note that `packages/base-formula` is **not** open source, despite being
+  checked into the public upstream repository: it carries the Docmost
+  Enterprise License (`packages/base-formula/LICENSE`), which permits
+  development and testing but not distribution, and conditions production use
+  on a subscription. Nothing in CE imports it. See
+  `packages/ce-formula/README.md`.
 - **Licence shim** (`licence/`): reports the features in
   `licence/enabled-features.ts` as available to every workspace so the client
   unlocks them. No license key is involved.
+
+## Where the bases contract comes from
+
+CE's wire contract — route paths, JSON shapes, stored values, event names — is
+deliberately compatible with the one upstream's enterprise build uses. Three
+reasons, all of them interoperability:
+
+1. A database written by an enterprise install stays readable. Property types,
+   `type_options` and view `config` are persisted JSON that the open-source
+   migration creates but does not describe, so the shapes have to agree.
+2. The open-source core calls into bases at fixed seams it defines itself
+   (`require('./ee/...')`, the `base` editor node, the feature key), and those
+   seams dictate part of the interface.
+3. `apps/client/src/ce/base` and `apps/client/src/ee/base` stay interchangeable,
+   which is what lets this fork rebase without re-deriving the interface every
+   release.
+
+Compatibility is an interface property; no enterprise implementation code was
+copied into this directory. Provenance, area by area:
+
+| part of the contract | comes from |
+|---|---|
+| table, column and JSON key names (`base_properties`, `base_rows.cells`, `base_views.config`, `pages.is_base`, `base_schema_version`) | open-source `database/migrations/20260529T125146-bases.ts` |
+| `BaseProperty` / `BaseRow` / `BaseView` entity types | open-source `database/types/entity.types.ts` |
+| domain event names (`base.row.created`, `base.schema.bumped`, …) | open-source `common/events/event.contants.ts` |
+| queue and job names (`BASE_QUEUE`, `base-type-conversion`, …) | open-source `integrations/queue/constants/queue.constants.ts` |
+| the `bases` feature key | open-source `common/features.ts` |
+| socket operation names (`base:row:created`, …) | restyled from the open-source `EventName.BASE_*` constants. The open-source `ws/base-realtime.bridge.ts` forwards these blind and never names one, so the colon spelling matches the enterprise client's rather than being derived from open-source code. |
+| property type values (`text`, `multiSelect`, `lastEditedBy`, …) and `type_options` / view `config` shapes | chosen to match what an enterprise install writes into `base_properties.type` and the two `jsonb` columns, per reason 1 above |
+| `POST /api/bases/**` route paths and request/response shapes | chosen so the two client implementations stay interchangeable, per reason 3 above |
 
 ## Why `apps/server/src/ee` still exists
 
@@ -58,11 +100,9 @@ file; keep it deleted (`git rm .gitmodules`).
 After a rebase, re-check the four `require()` seams above still exist with the
 same paths, and that `apps/server/src/common/features.ts`, the
 `EventName.BASE_*` constants, `QueueName.BASE_QUEUE` and the bases migration are
-still present. If upstream changes the client contract
-(`apps/client/src/ee/base/services/base-service.ts`,
-`apps/client/src/ee/base/types/base.types.ts`,
-`apps/client/src/ee/base/hooks/use-base-socket.ts`), mirror the change in
-`base/types/base.types.ts` and the affected service.
+still present. The client contract lives in the fork
+(`apps/client/src/ce/base/types.ts`, `api.ts` and
+`realtime/use-base-socket.ts`); change both sides together.
 
 ## Layout
 

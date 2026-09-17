@@ -1,0 +1,322 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  --kanban-border: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  --kanban-column-bg: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+  --kanban-column-over: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+  --kanban-card-bg: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  --kanban-card-border: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  --kanban-hover: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+}
+
+.root[data-embedded] {
+  flex: none;
+  min-height: auto;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 12px;
+}
+
+/* ---- board ---- */
+
+.board {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 2px 8px;
+}
+
+.root[data-embedded] .board {
+  flex: none;
+  min-height: auto;
+}
+
+.loadingMore {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+}
+
+/* ---- column ---- */
+
+.column {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  flex-shrink: 0;
+  max-height: 100%;
+  border-radius: 6px;
+  background: var(--kanban-column-bg);
+  transition: background 100ms;
+}
+
+.root[data-embedded] .column {
+  max-height: none;
+}
+
+.column[data-card-over] {
+  background: var(--kanban-column-over);
+}
+
+.column[data-dragging] {
+  opacity: 0.4;
+}
+
+.column[data-drop-edge="left"]::before,
+.column[data-drop-edge="right"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--mantine-primary-color-filled);
+  z-index: 2;
+}
+
+.column[data-drop-edge="left"]::before {
+  left: -7px;
+}
+
+.column[data-drop-edge="right"]::after {
+  right: -7px;
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 6px 4px 10px;
+  flex-shrink: 0;
+}
+
+.columnHeader[data-draggable] {
+  cursor: grab;
+}
+
+.columnHeader[data-draggable]:active {
+  cursor: grabbing;
+}
+
+.columnTitle {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.noValueLabel {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+  color: var(--mantine-color-dimmed);
+  white-space: nowrap;
+}
+
+.columnCount {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.columnMenuButton {
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 100ms;
+}
+
+.column:hover .columnMenuButton,
+.column[data-menu-open] .columnMenuButton,
+.columnMenuButton:focus-visible {
+  opacity: 1;
+}
+
+.columnBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 24px;
+  overflow-y: auto;
+  padding: 2px 8px 8px;
+}
+
+.root[data-embedded] .columnBody {
+  overflow-y: visible;
+}
+
+.columnEmpty {
+  min-height: 24px;
+  border-radius: 6px;
+  border: 1px dashed transparent;
+}
+
+.column[data-card-over] .columnEmpty {
+  border-color: var(--kanban-border);
+}
+
+.addCard {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 8px 8px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-dimmed);
+  flex-shrink: 0;
+}
+
+.addCard:hover:not(:disabled) {
+  background: var(--kanban-hover);
+  color: inherit;
+}
+
+/* ---- hidden columns ---- */
+
+.hiddenColumns {
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding: 6px 4px;
+  margin-left: auto;
+}
+
+.hiddenColumnLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* ---- card ---- */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--kanban-card-border);
+  background: var(--kanban-card-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  outline: none;
+  transition: box-shadow 100ms;
+}
+
+.card:hover,
+.card:focus-visible {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.card:focus-visible {
+  border-color: var(--mantine-primary-color-filled);
+}
+
+.card[data-dragging] {
+  opacity: 0.4;
+}
+
+.card[data-drop-edge="top"]::before,
+.card[data-drop-edge="bottom"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--mantine-primary-color-filled);
+  z-index: 2;
+}
+
+.card[data-drop-edge="top"]::before {
+  top: -6px;
+}
+
+.card[data-drop-edge="bottom"]::after {
+  bottom: -6px;
+}
+
+.cardTitle {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.cardTitle[data-empty] {
+  color: var(--mantine-color-dimmed);
+  font-weight: 400;
+}
+
+.cardField {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  font-size: var(--mantine-font-size-xs);
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1));
+}
+
+.cardField > * {
+  min-width: 0;
+}
+
+/* ---- toolbar controls ---- */
+
+.toolButton {
+  font-weight: 500;
+}
+
+.propertiesHeader {
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.propertiesList {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+
+.propertyRow {
+  padding: 5px 8px;
+  border-radius: 4px;
+}
+
+.propertyRow:hover {
+  background: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+}
+
+.propertyLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: var(--mantine-font-size-sm);
+}
+
+.propertyIcon {
+  flex-shrink: 0;
+  color: var(--mantine-color-dimmed);
+}
+
+.propertyName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

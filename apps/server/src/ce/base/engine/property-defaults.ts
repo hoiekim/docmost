@@ -15,7 +15,8 @@ export function defaultTypeOptionsFor(type: BasePropertyType): TypeOptions {
     case 'status':
       return defaultStatusTypeOptions();
     case 'number':
-      return { format: 'plain', precision: 0 };
+      // No precision: render the stored value as typed.
+      return { format: 'plain' };
     case 'date':
       return { includeTime: false };
     case 'person':

@@ -1,0 +1,362 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  --grid-border: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  --grid-header-bg: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+  --grid-bg: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  --grid-hover: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+  --grid-selected: light-dark(var(--mantine-color-blue-0), rgba(43, 122, 241, 0.16));
+}
+
+.root[data-embedded] {
+  flex: none;
+}
+
+.root[data-resizing] {
+  cursor: col-resize;
+  user-select: none;
+}
+
+.scrollport {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  outline: none;
+  position: relative;
+}
+
+.root[data-embedded] .scrollport {
+  flex: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* The embed host publishes how far the viewport may extend toward the
+   * page edges; scroll there while keeping the first cell aligned. */
+  margin-left: calc(-1 * var(--embed-extend-l, 0px));
+  margin-right: calc(-1 * var(--embed-extend-r, 0px));
+  padding-left: var(--embed-grid-pad-left, 0px);
+  padding-right: var(--embed-grid-pad-right, 0px);
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  /* On the table, not the scrollport: an embedded scrollport extends past
+   * the page padding so wide tables can pan, but the rule must not. */
+  border-top: 1px solid var(--grid-border);
+}
+
+/* ---- header ---- */
+
+.headerRow {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--grid-header-bg);
+  border-bottom: 1px solid var(--grid-border);
+}
+
+.rowNumberHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-right: 1px solid var(--grid-border);
+}
+
+.headerCell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-right: 1px solid var(--grid-border);
+  min-width: 0;
+}
+
+.headerCell[data-dragging] {
+  opacity: 0.4;
+}
+
+.headerCell[data-drop-edge="left"]::before,
+.headerCell[data-drop-edge="right"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--mantine-primary-color-filled);
+  z-index: 4;
+}
+
+.headerCell[data-drop-edge="left"]::before {
+  left: -1px;
+}
+
+.headerCell[data-drop-edge="right"]::after {
+  right: -1px;
+}
+
+.headerButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  padding: 0 8px;
+  min-width: 0;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+  color: var(--mantine-color-dimmed);
+}
+
+.headerButton:hover,
+.headerCell[data-menu-open] .headerButton {
+  background: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+}
+
+.headerIcon {
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.headerLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.headerBadge {
+  flex-shrink: 0;
+}
+
+.headerSort {
+  flex-shrink: 0;
+  color: var(--mantine-primary-color-filled);
+}
+
+.headerCaret {
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 100ms;
+}
+
+.headerButton:hover .headerCaret,
+.headerCell[data-menu-open] .headerCaret {
+  opacity: 0.7;
+}
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -3px;
+  width: 7px;
+  cursor: col-resize;
+  z-index: 2;
+}
+
+.resizeHandle:hover,
+.root[data-resizing] .resizeHandle {
+  background: var(--mantine-primary-color-filled);
+  opacity: 0.35;
+}
+
+.addColumnCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  flex-shrink: 0;
+}
+
+.addColumnSpacer {
+  flex-shrink: 0;
+}
+
+/* ---- body ---- */
+
+.body {
+  position: relative;
+}
+
+.row {
+  display: flex;
+  border-bottom: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  position: relative;
+}
+
+.row:hover {
+  background: var(--grid-hover);
+}
+
+.row[data-selected] {
+  background: var(--grid-selected);
+}
+
+.row[data-drop-edge="top"]::before,
+.row[data-drop-edge="bottom"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--mantine-primary-color-filled);
+  z-index: 2;
+}
+
+.row[data-drop-edge="top"]::before {
+  top: -1px;
+}
+
+.row[data-drop-edge="bottom"]::after {
+  bottom: -1px;
+}
+
+.rowNumberCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 56px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--grid-border);
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-xs);
+  font-variant-numeric: tabular-nums;
+  position: relative;
+}
+
+.rowIndex {
+  min-width: 18px;
+  text-align: center;
+}
+
+.rowCheckbox {
+  display: none;
+}
+
+.row:hover .rowCheckbox,
+.rowNumberCell[data-selected] .rowCheckbox {
+  display: block;
+}
+
+.row:hover .rowIndex,
+.rowNumberCell[data-selected] .rowIndex {
+  display: none;
+}
+
+.dragHandle {
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  cursor: grab;
+  color: var(--mantine-color-dimmed);
+}
+
+.row:hover .dragHandle {
+  display: inline-flex;
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0 8px;
+  min-width: 0;
+  border-right: 1px solid var(--grid-border);
+  cursor: default;
+  overflow: visible;
+}
+
+.cell > * {
+  min-width: 0;
+}
+
+.cell[data-focused] {
+  box-shadow: inset 0 0 0 2px var(--mantine-primary-color-filled);
+  z-index: 1;
+}
+
+.cell[data-editing] {
+  background: var(--grid-bg);
+  z-index: 5;
+}
+
+.cell[data-primary] {
+  font-weight: 500;
+}
+
+.expandButton {
+  /* Centred with top/bottom + auto margins rather than a transform, so
+   * Mantine's :active translateY(1px) press effect does not fight it. */
+  position: absolute;
+  right: 6px;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+  opacity: 0;
+  transition: opacity 100ms;
+}
+
+.cell:hover .expandButton,
+.cell[data-focused] .expandButton,
+.expandButton:focus-visible {
+  opacity: 1;
+}
+
+/* ---- footer ---- */
+
+.addRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-dimmed);
+  border-bottom: 1px solid var(--grid-border);
+  position: sticky;
+  left: 0;
+  width: 100%;
+}
+
+.addRow:hover:not(:disabled) {
+  background: var(--grid-hover);
+  color: inherit;
+}
+
+.footerRow,
+.countRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  position: sticky;
+  left: 0;
+}
+
+.countRow {
+  padding-top: 4px;
+}
+
+.selectionBar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  background: light-dark(var(--mantine-color-blue-0), var(--mantine-color-dark-5));
+}

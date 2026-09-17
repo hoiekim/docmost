@@ -10,7 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useAtomValue } from "jotai";
 import { ErrorBoundary } from "react-error-boundary";
-import { useConvertPageToBaseMutation } from "@/ee/base/queries/base-query";
+import { useConvertPageToBaseMutation } from "@/ce/base/queries/base-query";
 import {
   pageEditorAtom,
   titleEditorAtom,

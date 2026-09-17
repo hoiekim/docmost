@@ -1,0 +1,137 @@
+/* ---- header (inside the Modal title slot) ---- */
+
+.headerTools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.headerCount {
+  margin: 0 6px;
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- title ---- */
+
+.title {
+  display: block;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 4px 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  resize: none;
+  overflow: hidden;
+  font: inherit;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: inherit;
+}
+
+.title::placeholder {
+  color: var(--mantine-color-dimmed);
+  font-weight: 500;
+}
+
+.title[readonly] {
+  cursor: default;
+}
+
+/* ---- fields ---- */
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fieldRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.fieldLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 160px;
+  flex-shrink: 0;
+  min-width: 0;
+  min-height: 32px;
+  padding: 6px 4px;
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-sm);
+}
+
+.fieldLabelIcon {
+  flex-shrink: 0;
+}
+
+.fieldLabelText {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.fieldValue {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  min-height: 32px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: var(--mantine-font-size-sm);
+}
+
+.fieldValue[data-clickable] {
+  cursor: pointer;
+}
+
+.fieldValue[data-clickable]:hover,
+.fieldValue[data-editing] {
+  background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+}
+
+.fieldValue[data-editing] {
+  cursor: default;
+}
+
+.empty {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  min-height: 20px;
+  line-height: 1.4;
+  color: var(--mantine-color-dimmed);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---- footer ---- */
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+}

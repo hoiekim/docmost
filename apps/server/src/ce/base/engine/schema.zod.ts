@@ -140,7 +140,7 @@ export const formulaTypeOptionsSchema = z.looseObject({
   ast: z.unknown().optional(),
   resultType: z.enum(['number', 'string', 'boolean', 'date', 'null']).optional(),
   dependencies: z.array(z.string()).optional(),
-  astVersion: z.literal(1).optional(),
+  astVersion: z.number().int().nonnegative().optional(),
   formatOptions: z.record(z.string(), z.unknown()).optional(),
 });
 

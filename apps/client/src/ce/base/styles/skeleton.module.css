@@ -1,0 +1,41 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.table {
+  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.cell {
+  flex: 1 1 0;
+  min-width: 120px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border-right: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.cell:last-child {
+  border-right: none;
+}
