@@ -1,17 +1,20 @@
 import { EnvironmentService } from '../../environment/environment.service';
 import { MailOption, PostmarkConfig, SMTPConfig } from '../interfaces';
-import { SmtpDriver, PostmarkDriver, LogDriver } from '../drivers';
+import { SmtpDriver } from '../drivers/smtp.driver';
+import { LogDriver } from '../drivers/log.driver';
 import { MailDriver } from '../drivers/interfaces/mail-driver.interface';
 import { MailConfig } from '../interfaces';
 import { MAIL_CONFIG_TOKEN, MAIL_DRIVER_TOKEN } from '../mail.constants';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
-function createMailDriver(mail: MailConfig): MailDriver {
+async function createMailDriver(mail: MailConfig): Promise<MailDriver> {
   switch (mail.driver) {
     case MailOption.SMTP:
       return new SmtpDriver(mail.config as SMTPConfig);
-    case MailOption.Postmark:
+    case MailOption.Postmark: {
+      const { PostmarkDriver } = await import('../drivers/postmark.driver');
       return new PostmarkDriver(mail.config as PostmarkConfig);
+    }
     case MailOption.Log:
       return new LogDriver();
     default:
@@ -71,6 +74,6 @@ export const mailDriverConfigProvider = {
 
 export const mailDriverProvider = {
   provide: MAIL_DRIVER_TOKEN,
-  useFactory: (config: MailConfig) => createMailDriver(config),
+  useFactory: async (config: MailConfig) => createMailDriver(config),
   inject: [MAIL_CONFIG_TOKEN],
 };

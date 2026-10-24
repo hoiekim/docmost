@@ -11,19 +11,24 @@ import {
   StorageDriver,
   StorageOption,
 } from '../interfaces';
-import { AzureDriver, LocalDriver, S3Driver } from '../drivers';
+import { LocalDriver } from '../drivers/local.driver';
 import * as process from 'node:process';
 import { LOCAL_STORAGE_PATH } from '../../../common/helpers';
 import path from 'path';
 
-function createStorageDriver(disk: StorageConfig): StorageDriver {
+// The cloud SDKs are large, so only the selected driver's module is loaded.
+async function createStorageDriver(disk: StorageConfig): Promise<StorageDriver> {
   switch (disk.driver) {
     case StorageOption.LOCAL:
       return new LocalDriver(disk.config as LocalStorageConfig);
-    case StorageOption.S3:
+    case StorageOption.S3: {
+      const { S3Driver } = await import('../drivers/s3.driver');
       return new S3Driver(disk.config as S3StorageConfig);
-    case StorageOption.AZURE:
+    }
+    case StorageOption.AZURE: {
+      const { AzureDriver } = await import('../drivers/azure.driver');
       return new AzureDriver(disk.config as AzureStorageConfig);
+    }
     default:
       throw new Error(`Unknown storage driver`);
   }
@@ -95,6 +100,6 @@ export const storageDriverConfigProvider = {
 
 export const storageDriverProvider = {
   provide: STORAGE_DRIVER_TOKEN,
-  useFactory: (config: StorageConfig) => createStorageDriver(config),
+  useFactory: async (config: StorageConfig) => createStorageDriver(config),
   inject: [STORAGE_CONFIG_TOKEN],
 };
